@@ -105,5 +105,36 @@ class IOrderStatusHistoryAdapterTest {
         verify(orderStatusHistoryRepository, times(1)).findByOrderId(1L);
         verify(orderStatusHistoryEntityMapper, never()).toModel(any());
     }
+
+    @Test
+    void findAll_ShouldReturnMappedList_WhenRecordsExist() {
+        List<OrderStatusHistoryEntity> entityList = List.of(orderStatusHistoryEntity);
+        List<OrderStatusHistory> expectedList = List.of(orderStatusHistory);
+
+        when(orderStatusHistoryRepository.findAll()).thenReturn(entityList);
+        when(orderStatusHistoryEntityMapper.toModel(orderStatusHistoryEntity)).thenReturn(orderStatusHistory);
+
+        List<OrderStatusHistory> result = orderStatusHistoryAdapter.findAll();
+
+        assertNotNull(result);
+        assertEquals(expectedList.size(), result.size());
+        assertEquals(expectedList.get(0).getOrderId(), result.get(0).getOrderId());
+
+        verify(orderStatusHistoryRepository, times(1)).findAll();
+        verify(orderStatusHistoryEntityMapper, times(entityList.size())).toModel(any(OrderStatusHistoryEntity.class));
+    }
+
+    @Test
+    void findAll_ShouldReturnEmptyList_WhenNoRecordsExist() {
+        when(orderStatusHistoryRepository.findAll()).thenReturn(Collections.emptyList());
+
+        List<OrderStatusHistory> result = orderStatusHistoryAdapter.findAll();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(orderStatusHistoryRepository, times(1)).findAll();
+        verify(orderStatusHistoryEntityMapper, never()).toModel(any());
+    }
 }
 

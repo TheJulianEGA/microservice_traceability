@@ -1,9 +1,12 @@
 package microservice_traceability.traceability.application.handler;
 
+import microservice_traceability.traceability.application.dto.EmployeeEfficiencyResponse;
 import microservice_traceability.traceability.application.dto.OrderStatusHistoryRequest;
 import microservice_traceability.traceability.application.dto.OrderStatusHistoryResponse;
+import microservice_traceability.traceability.application.dto.OrderTimeResponse;
 import microservice_traceability.traceability.application.mapper.IOrderStatusHistoryMapper;
 import microservice_traceability.traceability.domain.api.IOrderStatusHistoryServicePort;
+import microservice_traceability.traceability.domain.model.EmployeeEfficiency;
 import microservice_traceability.traceability.domain.model.OrderStatusHistory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
@@ -85,5 +89,47 @@ class OrderStatusHistoryHandlerTest {
 
         verify(orderStatusHistoryService, times(1)).getOrderStatusHistoryByOrderId(orderId);
         verify(orderStatusHistoryMapper, never()).toResponse(any());
+    }
+
+    @Test
+    void getOrderTimeByOrderId_ShouldReturnOrderTimeResponse_WhenDurationIsCalculated() {
+        Long orderId = 1L;
+        Duration duration = Duration.ofHours(2).plusMinutes(15).plusSeconds(30);
+        OrderTimeResponse expectedResponse = new OrderTimeResponse(orderId, 2, 15, 30);
+
+        when(orderStatusHistoryService.calculateOrderDuration(orderId)).thenReturn(duration);
+        when(orderStatusHistoryMapper.toOrderTimeResponse(orderId, duration)).thenReturn(expectedResponse);
+
+        OrderTimeResponse result = orderStatusHistoryHandler.getOrderTimeByOrderId(orderId);
+
+        assertNotNull(result);
+        assertEquals(expectedResponse, result);
+
+        verify(orderStatusHistoryService, times(1)).calculateOrderDuration(orderId);
+        verify(orderStatusHistoryMapper, times(1)).toOrderTimeResponse(orderId, duration);
+    }
+
+    @Test
+    void getEmployeeEfficiencyRanking_ShouldReturnEmployeeEfficiencyResponses_WhenEmployeesExist() {
+        EmployeeEfficiency efficiency = EmployeeEfficiency.builder()
+                .employeeId(100L)
+                .duration(Duration.ofHours(1).plusMinutes(45).plusSeconds(10))
+                .build();
+
+        EmployeeEfficiencyResponse expectedResponse = new EmployeeEfficiencyResponse(100L, 1, 45, 10);
+
+        when(orderStatusHistoryService.calculateAverageOrderCompletionTimePerEmployee())
+                .thenReturn(List.of(efficiency));
+        when(orderStatusHistoryMapper.toEmployeeEfficiencyResponse(efficiency))
+                .thenReturn(expectedResponse);
+
+        List<EmployeeEfficiencyResponse> result = orderStatusHistoryHandler.getEmployeeEfficiencyRanking();
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(expectedResponse, result.get(0));
+
+        verify(orderStatusHistoryService, times(1)).calculateAverageOrderCompletionTimePerEmployee();
+        verify(orderStatusHistoryMapper, times(1)).toEmployeeEfficiencyResponse(efficiency);
     }
 }

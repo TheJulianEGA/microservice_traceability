@@ -2,8 +2,10 @@ package microservice_traceability.traceability.infrastructure.http.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import microservice_traceability.traceability.application.dto.EmployeeEfficiencyResponse;
 import microservice_traceability.traceability.application.dto.OrderStatusHistoryRequest;
 import microservice_traceability.traceability.application.dto.OrderStatusHistoryResponse;
+import microservice_traceability.traceability.application.dto.OrderTimeResponse;
 import microservice_traceability.traceability.application.handler.IOrderStatusHistoryHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -21,7 +22,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -94,5 +94,37 @@ class OrderStatusHistoryControllerTest {
                 .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(responseList)));
 
         verify(orderStatusHistoryHandler, times(1)).getOrderStatusHistoryByOrderId(orderId);
+    }
+
+    @Test
+    void getOrderTimeByOrderId_ShouldReturnOk_WhenOrderExists() throws Exception {
+        Long orderId = 1L;
+        OrderTimeResponse response = new OrderTimeResponse(orderId, 3600, 60, 1);
+
+        when(orderStatusHistoryHandler.getOrderTimeByOrderId(orderId)).thenReturn(response);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/order-status-history/time-per-order/{orderId}", orderId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(response)));
+
+        verify(orderStatusHistoryHandler, times(1)).getOrderTimeByOrderId(orderId);
+    }
+
+    @Test
+    void getEmployeeEfficiencyRanking_ShouldReturnOk_WhenDataExists() throws Exception {
+        List<EmployeeEfficiencyResponse> responseList = List.of(
+                new EmployeeEfficiencyResponse(1L, 1800, 30, 0),
+                new EmployeeEfficiencyResponse(2L, 3600, 60, 1)
+        );
+
+        when(orderStatusHistoryHandler.getEmployeeEfficiencyRanking()).thenReturn(responseList);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/order-status-history/employee-ranking")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(responseList)));
+
+        verify(orderStatusHistoryHandler, times(1)).getEmployeeEfficiencyRanking();
     }
 }
