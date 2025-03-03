@@ -29,6 +29,9 @@ public class OrderStatusHistoryEntity {
     private Long restaurantId;
 
     @Indexed
+    private Long ownerId;
+
+    @Indexed
     private Long employeeId;
 
     @Indexed

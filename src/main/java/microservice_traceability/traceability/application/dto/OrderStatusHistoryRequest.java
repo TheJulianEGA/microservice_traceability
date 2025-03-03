@@ -24,6 +24,8 @@ public class OrderStatusHistoryRequest {
     @NotNull
     private Long restaurantId;
 
+    private Long ownerId;
+
     private Long employeeId;
 
     private String employeeMail;

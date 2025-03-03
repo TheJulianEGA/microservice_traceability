@@ -10,4 +10,6 @@ public interface IOrderStatusHistoryPersistencePort {
     String findCustomerMailByOrderId(Long orderId);
 
     List<OrderStatusHistory> findByOrderId(Long orderId);
+
+    List<OrderStatusHistory> findAll();
 }

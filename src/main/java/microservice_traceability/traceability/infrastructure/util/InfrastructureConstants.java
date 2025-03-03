@@ -10,6 +10,7 @@ public class InfrastructureConstants {
     public static final String ROLE_CUSTOMER = "hasRole('CUSTOMER')";
     public static final String AUTH_HEADER = "Authorization";
     public static final String ERROR_CONVERTING_USER_ID = "Error converting user ID.";
+    public static final String ROLE_OWNER = "hasRole('OWNER')";
     private InfrastructureConstants() {
     }
 

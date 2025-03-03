@@ -41,4 +41,11 @@ public class IOrderStatusHistoryAdapter implements IOrderStatusHistoryPersistenc
                 .map(orderStatusHistoryEntityMapper::toModel)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<OrderStatusHistory> findAll() {
+        return orderStatusHistoryRepository.findAll().stream()
+                .map(orderStatusHistoryEntityMapper::toModel)
+                .collect(Collectors.toList());
+    }
 }
