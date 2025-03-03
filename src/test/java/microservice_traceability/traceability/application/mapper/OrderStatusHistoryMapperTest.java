@@ -1,13 +1,17 @@
 package microservice_traceability.traceability.application.mapper;
 
+import microservice_traceability.traceability.application.dto.EmployeeEfficiencyResponse;
 import microservice_traceability.traceability.application.dto.OrderStatusHistoryRequest;
 import microservice_traceability.traceability.application.dto.OrderStatusHistoryResponse;
+import microservice_traceability.traceability.application.dto.OrderTimeResponse;
+import microservice_traceability.traceability.domain.model.EmployeeEfficiency;
 import microservice_traceability.traceability.domain.model.OrderStatusHistory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -85,4 +89,38 @@ class OrderStatusHistoryMapperTest {
                 () -> assertEquals(model.getStateChangeTime(), response.getStateChangeTime())
         );
     }
+    @Test
+    void toOrderTimeResponse_ShouldMapDurationToResponse() {
+        Long orderId = 1L;
+        Duration duration = Duration.ofHours(2).plusMinutes(30).plusSeconds(15);
+
+        OrderTimeResponse response = orderStatusHistoryMapper.toOrderTimeResponse(orderId, duration);
+
+        assertNotNull(response);
+        assertAll(
+                () -> assertEquals(orderId, response.getOrderId()),
+                () -> assertEquals(2, response.getHours()),
+                () -> assertEquals(30, response.getMinutes()),
+                () -> assertEquals(15, response.getSeconds())
+        );
+    }
+
+    @Test
+    void toEmployeeEfficiencyResponse_ShouldMapEfficiencyToResponse() {
+        EmployeeEfficiency efficiency = EmployeeEfficiency.builder()
+                .employeeId(100L)
+                .duration(Duration.ofHours(1).plusMinutes(45).plusSeconds(10))
+                .build();
+
+        EmployeeEfficiencyResponse response = orderStatusHistoryMapper.toEmployeeEfficiencyResponse(efficiency);
+
+        assertNotNull(response);
+        assertAll(
+                () -> assertEquals(efficiency.getEmployeeId(), response.getEmployeeId()),
+                () -> assertEquals(1, response.getAverageHours()),
+                () -> assertEquals(45, response.getAverageMinutes()),
+                () -> assertEquals(10, response.getAverageSeconds())
+        );
+    }
+
 }

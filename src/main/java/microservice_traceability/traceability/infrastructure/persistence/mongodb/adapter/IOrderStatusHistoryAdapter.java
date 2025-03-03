@@ -9,7 +9,6 @@ import microservice_traceability.traceability.infrastructure.persistence.mongodb
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,13 +38,13 @@ public class IOrderStatusHistoryAdapter implements IOrderStatusHistoryPersistenc
         List<OrderStatusHistoryEntity> entities = orderStatusHistoryRepository.findByOrderId(orderId);
         return entities.stream()
                 .map(orderStatusHistoryEntityMapper::toModel)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public List<OrderStatusHistory> findAll() {
         return orderStatusHistoryRepository.findAll().stream()
                 .map(orderStatusHistoryEntityMapper::toModel)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

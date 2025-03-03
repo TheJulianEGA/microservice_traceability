@@ -23,8 +23,10 @@ public class OrderStatusHistoryUseCasePort implements IOrderStatusHistoryService
 
     @Override
     public void saveOrderStatusHistory(OrderStatusHistory orderStatusHistory) {
-        setCustomerMailIfMissing(orderStatusHistory);
-        setOwnerIdIfMissing(orderStatusHistory);
+        List<OrderStatusHistory> historyList = orderStatusHistoryPersistencePort.findByOrderId(orderStatusHistory.getOrderId());
+
+        setCustomerMailIfMissing(orderStatusHistory, historyList);
+        setOwnerIdIfMissing(orderStatusHistory, historyList);
 
         orderStatusHistoryPersistencePort.saveOrderStatusHistory(orderStatusHistory);
     }
@@ -45,7 +47,6 @@ public class OrderStatusHistoryUseCasePort implements IOrderStatusHistoryService
 
         validateOrderHistoryExists(historyList);
         validateOwnerAccess(historyList);
-
 
         LocalDateTime orderStartTime = findOrderStartTime(historyList);
         LocalDateTime orderEndTime = findOrderEndTime(historyList);
@@ -95,6 +96,7 @@ public class OrderStatusHistoryUseCasePort implements IOrderStatusHistoryService
     }
 
     private void processOrderHistory(List<OrderStatusHistory> orderHistory, Map<Long, List<Duration>> employeeDurations) {
+
         LocalDateTime startTime = findStateChangeTime(orderHistory, DomainConstants.STATUS_IN_PREPARATION);
         LocalDateTime endTime = findStateChangeTime(orderHistory, DomainConstants.STATUS_DELIVERY);
 
@@ -131,9 +133,9 @@ public class OrderStatusHistoryUseCasePort implements IOrderStatusHistoryService
         return new EmployeeEfficiency(employeeId, averageDuration);
     }
 
-    private void setCustomerMailIfMissing(OrderStatusHistory orderStatusHistory) {
+    private void setCustomerMailIfMissing(OrderStatusHistory orderStatusHistory, List<OrderStatusHistory> historyList) {
         if (orderStatusHistory.getCustomerMail() == null) {
-            orderStatusHistoryPersistencePort.findByOrderId(orderStatusHistory.getOrderId()).stream()
+            historyList.stream()
                     .map(OrderStatusHistory::getCustomerMail)
                     .filter(Objects::nonNull)
                     .findFirst()
@@ -141,9 +143,9 @@ public class OrderStatusHistoryUseCasePort implements IOrderStatusHistoryService
         }
     }
 
-    private void setOwnerIdIfMissing(OrderStatusHistory orderStatusHistory) {
+    private void setOwnerIdIfMissing(OrderStatusHistory orderStatusHistory, List<OrderStatusHistory> historyList) {
         if (orderStatusHistory.getOwnerId() == null) {
-            orderStatusHistoryPersistencePort.findByOrderId(orderStatusHistory.getOrderId()).stream()
+            historyList.stream()
                     .map(OrderStatusHistory::getOwnerId)
                     .filter(Objects::nonNull)
                     .findFirst()
