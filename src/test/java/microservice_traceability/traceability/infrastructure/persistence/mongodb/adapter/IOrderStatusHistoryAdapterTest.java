@@ -11,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -72,4 +74,36 @@ class IOrderStatusHistoryAdapterTest {
 
         assertNull(email);
     }
+
+    @Test
+    void findByOrderId_ShouldReturnList_WhenRecordsExist() {
+        List<OrderStatusHistoryEntity> entityList = List.of(orderStatusHistoryEntity);
+        List<OrderStatusHistory> expectedList = List.of(orderStatusHistory);
+
+        when(orderStatusHistoryRepository.findByOrderId(1L)).thenReturn(entityList);
+        when(orderStatusHistoryEntityMapper.toModel(orderStatusHistoryEntity)).thenReturn(orderStatusHistory);
+
+        List<OrderStatusHistory> result = orderStatusHistoryAdapter.findByOrderId(1L);
+
+        assertNotNull(result);
+        assertEquals(expectedList.size(), result.size());
+        assertEquals(expectedList.get(0).getOrderId(), result.get(0).getOrderId());
+
+        verify(orderStatusHistoryRepository, times(1)).findByOrderId(1L);
+        verify(orderStatusHistoryEntityMapper, times(1)).toModel(orderStatusHistoryEntity);
+    }
+
+    @Test
+    void findByOrderId_ShouldReturnEmptyList_WhenNoRecordsExist() {
+        when(orderStatusHistoryRepository.findByOrderId(1L)).thenReturn(Collections.emptyList());
+
+        List<OrderStatusHistory> result = orderStatusHistoryAdapter.findByOrderId(1L);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(orderStatusHistoryRepository, times(1)).findByOrderId(1L);
+        verify(orderStatusHistoryEntityMapper, never()).toModel(any());
+    }
 }
+

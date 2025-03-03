@@ -1,7 +1,6 @@
 package microservice_traceability.traceability.infrastructure.persistence.mongodb.adapter;
 
 import lombok.RequiredArgsConstructor;
-import microservice_traceability.traceability.domain.api.IOrderStatusHistoryServicePort;
 import microservice_traceability.traceability.domain.model.OrderStatusHistory;
 import microservice_traceability.traceability.domain.spi.IOrderStatusHistoryPersistencePort;
 import microservice_traceability.traceability.infrastructure.persistence.mongodb.entity.OrderStatusHistoryEntity;

@@ -3,6 +3,7 @@ package microservice_traceability.traceability.infrastructure.http.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import microservice_traceability.traceability.application.dto.OrderStatusHistoryRequest;
+import microservice_traceability.traceability.application.dto.OrderStatusHistoryResponse;
 import microservice_traceability.traceability.application.handler.IOrderStatusHistoryHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -34,7 +36,6 @@ class OrderStatusHistoryControllerTest {
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
 
-    private OrderStatusHistoryRequest orderStatusHistoryRequest;
 
     @BeforeEach
     void setUp() {
@@ -66,5 +67,32 @@ class OrderStatusHistoryControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isCreated());
 
         verify(orderStatusHistoryHandler, times(1)).saveOrderStatusHistory(any(OrderStatusHistoryRequest.class));
+    }
+
+    @Test
+    void getOrderStatusHistoryByOrderId_ShouldReturnOk_WhenHistoryExists() throws Exception {
+        Long orderId = 1L;
+        List<OrderStatusHistoryResponse> responseList = List.of(
+                OrderStatusHistoryResponse.builder()
+                        .orderId(orderId)
+                        .clientId(2L)
+                        .customerMail("customer@example.com")
+                        .restaurantId(3L)
+                        .employeeId(4L)
+                        .employeeMail("employee@example.com")
+                        .previousState("PENDING")
+                        .newState("IN_PROGRESS")
+                        .stateChangeTime(LocalDateTime.now())
+                        .build()
+        );
+
+        when(orderStatusHistoryHandler.getOrderStatusHistoryByOrderId(orderId)).thenReturn(responseList);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/order-status-history/list-by-order/{orderId}", orderId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(responseList)));
+
+        verify(orderStatusHistoryHandler, times(1)).getOrderStatusHistoryByOrderId(orderId);
     }
 }
